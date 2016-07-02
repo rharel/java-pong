@@ -110,7 +110,7 @@ public class AggressiveAI extends PredictorAI
 		
 		final Vector2 direction = target.subtract(source).normalize();
 		final float bounceAngle = (float) (
-			0.5f * Math.PI - Math.acos(direction.dot(Vector2.X)));
+			0.5f * Math.PI - Math.acos(direction.x));
 		final float normalizedDistance = bounceAngle / ball.maxBounceAngle;
 		final float clampedNormalizedDistance =
 			MathUtility.clamp(normalizedDistance, -1, 1);
@@ -122,7 +122,7 @@ public class AggressiveAI extends PredictorAI
 			Math.abs(normalizedDistance) < 1 &&
 		    0 < desiredPaddlePosition &&
 		    desiredPaddlePosition < table.size.width;
-
+		
 		desiredPaddlePosition = MathUtility.clamp(
 			desiredPaddlePosition, 0, table.size.width);
 		
