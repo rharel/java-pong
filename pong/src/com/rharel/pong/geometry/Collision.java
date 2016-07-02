@@ -28,11 +28,12 @@ public class Collision
 		final Paddle paddle)
 	{
 		final BoundingBox box = paddle.getBoundingBox();
-		final Vector2 contactPoint = detect(ball, box);
-		if (contactPoint == null) { return; }
 		
-		separate(ball, contactPoint);
-		bounce(ball, box);
+		if (detect(ball, box))
+		{
+			separate(ball, box);
+			bounce(ball, box);
+		}
 	}
 	/**
 	 * Processes ball-table collisions. The ball's bounce direction is a
@@ -147,30 +148,37 @@ public class Collision
 		return stateAfter;
 	}
 	
-	private static Vector2 detect(
+	private static boolean detect(
 		final Ball ball,
 		final BoundingBox box)
 	{
-		// Point on the edge of the box, nearest to ball
+		// Point on the edge of the box (or inside), nearest to ball
 		final Vector2 contact = ball.position.clamp(
 			new Vector2(box.getLeft(), box.getBottom()),
 			new Vector2(box.getRight(), box.getTop()));
 		
 		final float distanceSquared = ball.position.subtract(contact).length2();
-		return distanceSquared < (ball.radius * ball.radius) ? contact : null;
+		return distanceSquared < (ball.radius * ball.radius);
 	}
 	private static void separate(
 		final Ball ball,
-		final Vector2 contactPoint)
+		final BoundingBox box)
 	{
-		Vector2 direction = ball.position.subtract(contactPoint);
-		if (direction.length2() == 0.0f)
-		{
-			direction.y = -Math.signum(ball.velocity.y);
-		}
-		direction = direction.normalize();
-		ball.position = contactPoint.add(
-			direction.multiply(ball.radius + EPSILON));
+		// Point on the edge of the box (or inside), nearest to ball
+		ball.position.clamp(
+			new Vector2(box.getLeft(), box.getBottom()),
+			new Vector2(box.getRight(), box.getTop()));
+		
+		final Vector2 direction = ball.velocity.normalize();
+		
+		final float targetY =
+			direction.y < 0 ?
+			box.getTop() + ball.radius + EPSILON :
+			box.getBottom() - ball.radius - EPSILON;
+
+		direction.y *= -1;
+		final float t = Math.abs((ball.position.y - targetY) / direction.y);
+		ball.position = ball.position.add(direction.multiply(t));
 	}
 	private static void bounce(
 		final Ball ball,
