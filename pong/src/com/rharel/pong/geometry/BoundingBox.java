@@ -69,4 +69,9 @@ public class BoundingBox
 			getLeft() + getRight(), getBottom() + getTop())
 			.multiply(0.5f);
 	}
+	@Override
+	public String toString()
+	{
+		return "BoundingBox [bottomLeft=" + bottomLeft + ", size=" + size + "]";
+	}
 }

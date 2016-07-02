@@ -65,4 +65,11 @@ public abstract class GameObject
 				.multiply(0.5f)),
 			size);
 	}
+	
+	@Override
+	public String toString()
+	{
+		return "GameObject [position=" + position + ", velocity=" + velocity
+			+ "]";
+	}
 }

@@ -58,4 +58,9 @@ public class Size
 		}
 		return true;
 	}
+	@Override
+	public String toString()
+	{
+		return "Size [width=" + width + ", height=" + height + "]";
+	}
 }
