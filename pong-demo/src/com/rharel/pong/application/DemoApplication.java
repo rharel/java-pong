@@ -1,8 +1,11 @@
 package com.rharel.pong.application;
 
 
+import java.util.List;
+
 import com.rharel.pong.ai.AggressiveAI;
-import com.rharel.pong.ai.ArtificialPlayer;
+import com.rharel.pong.ai.PredictorAI;
+import com.rharel.pong.ai.TrackerAI;
 import com.rharel.pong.core.Ball;
 import com.rharel.pong.core.Game;
 import com.rharel.pong.core.HumanPlayer;
@@ -66,33 +69,74 @@ public class DemoApplication extends Application
 
 	private void setupGame()
 	{
-		final Size paddle_size = new Size(
+		final Pair<Paddle> paddles = setupPaddles();
+		final Ball ball = setupBall();
+		final Table table = new Table(WINDOW_SIZE, paddles, ball);
+		final Pair<Player> players = setupPlayers();
+
+		game = new Game(table, players);
+	}
+	private Pair<Paddle> setupPaddles()
+	{
+		final Size paddleSize = new Size(
 			GAME_PADDLE_WIDTH_RELATIVE * WINDOW_SIZE.width,
 			GAME_PADDLE_HEIGHT);
-		final float paddle_speed =
+		final float paddleSpeed =
 			GAME_PADDLE_SPEED_RELATIVE * WINDOW_SIZE.width;
 
-		final Paddle paddle_a = new Paddle(paddle_size, paddle_speed);
-		final Paddle paddle_b = new Paddle(paddle_size, paddle_speed);
-		final Pair<Paddle> paddles = new Pair<Paddle>(paddle_a, paddle_b);
-
-		final Ball ball = new Ball(
+		final Paddle firstPaddle = new Paddle(paddleSize, paddleSpeed);
+		final Paddle secondPaddle = new Paddle(paddleSize, paddleSpeed);
+		
+		return new Pair<Paddle>(firstPaddle, secondPaddle);
+	}
+	private Ball setupBall()
+	{
+		 return new Ball(
 			GAME_BALL_RADIUS,
 			GAME_BALL_SPEED_RELATIVE * WINDOW_SIZE.height,
 			GAME_BALL_MAX_BOUNCE_ANGLE);
+	}
+	private Pair<Player> setupPlayers()
+	{
+		final List<String> args = getParameters().getRaw();
+		if (args.size() == 2)
+		{
+			playerTypes = new Pair<String>(args.get(0), args.get(1));
+		}
 		
-		final Table table = new Table(WINDOW_SIZE, paddles, ball);
-
-		artificialPlayer = new AggressiveAI(
-			Player.Position.FIRST,
-			GAME_AI_BRAKING_DISTANCE_RELATIVE * WINDOW_SIZE.width);
+		final Player firstPlayer = setupPlayer(
+			Player.Position.FIRST, playerTypes.first);
+		final Player secondPlayer = setupPlayer(
+			Player.Position.SECOND, playerTypes.second);
 		
-		humanPlayer = new HumanPlayer(Player.Position.SECOND);
-		
-		final Pair<Player> players = new Pair<Player>(
-			humanPlayer, artificialPlayer);
-		
-		game = new Game(table, players);
+		return new Pair<Player>(firstPlayer, secondPlayer);
+	}
+	private Player setupPlayer(
+		final Player.Position position,
+		final String type)
+	{
+		final float brakingDistance =
+			GAME_AI_BRAKING_DISTANCE_RELATIVE * WINDOW_SIZE.width;
+		switch (type)
+		{
+			case PLAYER_TYPE_HUMAN:
+			{
+				humanPlayer = new HumanPlayer(position);
+				return humanPlayer;
+			}
+			case PLAYER_TYPE_AI_TRACKER:
+			{
+				return new TrackerAI(position, brakingDistance);
+			}
+			case PLAYER_TYPE_AI_PREDICTOR:
+			{
+				return new PredictorAI(position, brakingDistance);
+			}
+			default:
+			{
+				return new AggressiveAI(position, brakingDistance);
+			}
+		}
 	}
 	private void setupGUI(final Stage stage)
 	{
@@ -124,7 +168,10 @@ public class DemoApplication extends Application
 		  {
 			  controller.pressRight();
 		  }
-		  humanPlayer.command = controller.getCommand();
+		  if (humanPlayer != null)
+		  {
+			  humanPlayer.command = controller.getCommand();
+		  }
 		});
 		scene.addEventHandler(KeyEvent.KEY_RELEASED, (key) ->
 		{
@@ -136,7 +183,10 @@ public class DemoApplication extends Application
 		  {
 			  controller.releaseRight();
 		  }
-		  humanPlayer.command = controller.getCommand();
+		  if (humanPlayer != null)
+		  {
+			  humanPlayer.command = controller.getCommand();
+		  }
 		});
 	}
 	private void enterMainLoop()
@@ -256,7 +306,7 @@ public class DemoApplication extends Application
 		final Pair<Integer> score = game.getScore();
     	stage.setTitle(
     		"[" + WINDOW_TITLE + "] - " +
-    		"Player : AI - " +
+    		"Bottom : Top - " +
 			score.second + " : " + score.first);
 	}
 	private void pause()
@@ -268,9 +318,17 @@ public class DemoApplication extends Application
 		mainLoop.start();
 	}
 	
+	private static final String PLAYER_TYPE_AI_TRACKER = "tracker";
+	private static final String PLAYER_TYPE_AI_PREDICTOR = "predictor";
+	private static final String PLAYER_TYPE_AI_AGGRESSIVE = "aggressive";
+	private static final String PLAYER_TYPE_HUMAN = "human";
+	
+	private Pair<String> playerTypes = new Pair<String>(
+		PLAYER_TYPE_AI_AGGRESSIVE,
+		PLAYER_TYPE_HUMAN);
+	
 	private Game game;
 	private HumanPlayer humanPlayer;
-	private ArtificialPlayer artificialPlayer;
 	private final KeyboardController controller = new KeyboardController();
 	
 	private Stage stage;
