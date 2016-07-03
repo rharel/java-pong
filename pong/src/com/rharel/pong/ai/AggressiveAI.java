@@ -77,8 +77,8 @@ public class AggressiveAI extends PredictorAI
 		final Ball ball = table.ball;
 		final float desiredBallPosition =
 			opponentPosition < 0.5f * table.size.width ?
-			ball.radius :
-			table.size.width - ball.radius;
+			table.size.width - ball.radius :
+			ball.radius;
 		
 		serveDirectly(table, predictedBallPosition, desiredBallPosition);
 		previousOpponentPosition = opponentPosition;
@@ -116,7 +116,7 @@ public class AggressiveAI extends PredictorAI
 			MathUtility.clamp(normalizedDistance, -1, 1);
 		final float offset =
 			clampedNormalizedDistance * 0.5f * self.size.width;
-		desiredPaddlePosition = sourceX + offset;
+		desiredPaddlePosition = sourceX - offset;
 		
 		final boolean isFeasible =
 			Math.abs(normalizedDistance) < 1 &&
