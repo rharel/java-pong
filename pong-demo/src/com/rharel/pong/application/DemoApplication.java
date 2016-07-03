@@ -52,6 +52,7 @@ public class DemoApplication extends Application
 	
 	private static final KeyCode KEY_MOVE_LEFT = KeyCode.A;
 	private static final KeyCode KEY_MOVE_RIGHT = KeyCode.D;
+	private static final KeyCode KEY_TOGGLE_PAUSE = KeyCode.P;
 	
 	public static void main(final String[] args)
 	{
@@ -160,33 +161,42 @@ public class DemoApplication extends Application
 	{
 		scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) ->
 		{
-		  if(key.getCode() == KEY_MOVE_LEFT)
-		  {
-		      controller.pressLeft();
-		  }
-		  else if (key.getCode() == KEY_MOVE_RIGHT)
-		  {
-			  controller.pressRight();
-		  }
-		  if (humanPlayer != null)
-		  {
-			  humanPlayer.command = controller.getCommand();
-		  }
+			if (key.getCode() == KeyCode.ESCAPE)
+			{
+				pause();
+				stage.close();
+			}
+			if (key.getCode() == KEY_TOGGLE_PAUSE)
+			{
+				togglePause();
+			}
+			else if(key.getCode() == KEY_MOVE_LEFT)
+		    {
+				controller.pressLeft();
+		    }
+			else if (key.getCode() == KEY_MOVE_RIGHT)
+			{
+				controller.pressRight();
+			}
+			if (humanPlayer != null)
+			{
+				humanPlayer.command = controller.getCommand();
+			}
 		});
 		scene.addEventHandler(KeyEvent.KEY_RELEASED, (key) ->
 		{
-		  if(key.getCode() == KEY_MOVE_LEFT)
-		  {
-		      controller.releaseLeft();
-		  }
-		  else if (key.getCode() == KEY_MOVE_RIGHT)
-		  {
-			  controller.releaseRight();
-		  }
-		  if (humanPlayer != null)
-		  {
-			  humanPlayer.command = controller.getCommand();
-		  }
+		    if(key.getCode() == KEY_MOVE_LEFT)
+		    {
+		    	controller.releaseLeft();
+		    }
+		    else if (key.getCode() == KEY_MOVE_RIGHT)
+		    {
+		    	controller.releaseRight();
+		    }
+		    if (humanPlayer != null)
+		    {
+		    	humanPlayer.command = controller.getCommand();
+		    }
 		});
 	}
 	private void enterMainLoop()
@@ -312,10 +322,17 @@ public class DemoApplication extends Application
 	private void pause()
 	{
 		mainLoop.stop();
+		isPaused = true;
 	}
 	private void resume()
 	{
+		isPaused = false;
 		mainLoop.start();
+	}
+	private void togglePause()
+	{
+		if (isPaused) { resume(); }
+		else { pause(); }
 	}
 	
 	private static final String PLAYER_TYPE_AI_TRACKER = "tracker";
@@ -335,4 +352,5 @@ public class DemoApplication extends Application
 	private Scene scene;
 	private GraphicsContext graphicsContext;
 	private AnimationTimer mainLoop;
+	private boolean isPaused = true;
 }
